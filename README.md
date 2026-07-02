@@ -31,7 +31,7 @@
 
 Make sure your PC and your iPhone are on the **same Wi‑Fi network**.
 
-> If you downloaded a build **without** `mpv.exe`, grab a Windows build of mpv from <https://mpv.io/installation/> and drop `mpv.exe` next to `goplay.exe`.
+> This release does **not** include `mpv.exe`. Download a Windows build of mpv from [mpv.io](https://mpv.io/installation/) and drop `mpv.exe` next to `goplay.exe`.
 
 ---
 
@@ -64,7 +64,7 @@ GoPlay reads `config.json` from the **same folder as `goplay.exe`** on startup. 
 git clone https://github.com/ivqxzz/goplay.git
 cd goplay
 go mod tidy
-go build -ldflags "-H windowsgui" -o goplay.exe .
+go build -trimpath -ldflags "-s -w" -o goplay.exe .
 ```
 
 Or just run the included `build.bat`.
