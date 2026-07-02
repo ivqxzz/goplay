@@ -24,7 +24,6 @@
 2. Unzip it anywhere. You should have these files in one folder:
    ```
    goplay.exe
-   mpv.exe
    config.json
    ```
 3. Run `goplay.exe`.
