@@ -1,43 +1,101 @@
 # GoPlay
 
-**GoPlay** is a lightweight AirPlay receiver for Windows, written in Go. It lets you mirror your iPhone/iPad screen to your PC and stream AirPlay audio with low latency, using [mpv](https://mpv.io/) for hardware‑accelerated rendering.
+GoPlay is a lightweight AirPlay receiver for Windows, written in Go. It allows you to mirror an iPhone or iPad screen to a PC and stream AirPlay audio using [mpv](https://mpv.io/) for playback.
 
-> No bloated runtime, no Bonjour service to install — a single `.exe` plus `mpv.exe`.
-
----
-
-## ✨ Features
-
-- 🖥️ **Screen Mirroring** — mirror an iPhone/iPad screen to your PC, with audio, at low latency (hardware decode via `--hwdec=auto`).
-- 🔊 **AirPlay Audio** — stream audio from your device to the PC (AAC‑ELD).
-- 🧪 **AirPlay Video / HLS** — experimental playback of non‑protected AirPlay video streams.
-- ⚙️ **Simple config** — name and port live in a single `config.json`.
-- 📦 **Portable** — no installer; just unzip and run.
-
-> ⚠️ **DRM‑protected content** (Netflix, Apple TV+, etc.) will **not** play — those streams use FairPlay video DRM, which is intentionally not implemented.
+GoPlay is designed to be simple, portable, and easy to run.
 
 ---
 
-## 🚀 Quick start (release build)
+## Features
 
-1. Download the latest archive from the [**Releases**](../../releases) page.
-2. Unzip it anywhere. You should have these files in one folder:
-   ```
+- Screen mirroring from iPhone and iPad to Windows
+- AirPlay audio playback
+- Experimental support for non-protected AirPlay video and HLS streams
+- Simple configuration through `config.json`
+- Portable Windows release, no installer required
+- Playback through `mpv`
+
+> DRM-protected content, such as Netflix, Apple TV+, and similar services, is not supported.
+
+---
+
+## Quick start for Windows
+
+1. Download the latest archive from the [Releases](https://github.com/ivqxzz/goplay/releases) page.
+2. Extract the archive to any folder.
+
+   The release archive contains:
+
+   ```text
    goplay.exe
    config.json
+   README.md
+   LICENSE
    ```
-3. Run `goplay.exe`.
-4. On your iPhone/iPad open **Control Center → Screen Mirroring** (or **AirPlay** from a media app) and pick **GoPlay**.
 
-Make sure your PC and your iPhone are on the **same Wi‑Fi network**.
+3. Download a Windows build of `mpv` from [mpv.io](https://mpv.io/installation/).
+4. Put `mpv.exe` in the same folder as `goplay.exe`.
 
-> This release does **not** include `mpv.exe`. Download a Windows build of mpv from [mpv.io](https://mpv.io/installation/) and drop `mpv.exe` next to `goplay.exe`.
+   The folder should look like this:
+
+   ```text
+   goplay.exe
+   mpv.exe
+   config.json
+   README.md
+   LICENSE
+   ```
+
+5. Run `goplay.exe`.
+6. On your iPhone or iPad, open **Control Center > Screen Mirroring** and select **GoPlay**.
+
+Make sure the PC and the iPhone or iPad are connected to the same local network.
+
+> The release archive does not include `mpv.exe`. It must be downloaded separately.
 
 ---
 
-## ⚙️ Configuration
+## Linux and macOS status
 
-GoPlay reads `config.json` from the **same folder as `goplay.exe`** on startup. If the file is missing, a default one is created automatically.
+GoPlay is primarily developed and tested on Windows.
+
+Linux and macOS builds may compile, but they are currently experimental and not fully tested. Some platform-specific behavior may require additional work, especially service discovery, firewall configuration, network interfaces, and child process handling.
+
+On Linux and macOS, `mpv` is normally installed as a system command and must be available in `PATH`.
+
+### Linux
+
+Install `mpv` with your package manager. For example, on Debian or Ubuntu:
+
+```bash
+sudo apt install mpv
+```
+
+Check that `mpv` is available:
+
+```bash
+mpv --version
+```
+
+### macOS
+
+Install `mpv` with Homebrew:
+
+```bash
+brew install mpv
+```
+
+Check that `mpv` is available:
+
+```bash
+mpv --version
+```
+
+---
+
+## Configuration
+
+GoPlay reads `config.json` from the same folder as the executable on startup. If the file is missing, a default configuration file is created automatically.
 
 ```json
 {
@@ -48,17 +106,25 @@ GoPlay reads `config.json` from the **same folder as `goplay.exe`** on startup. 
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `airplayName` | string | `"GoPlay"` | Name shown in the AirPlay / Screen Mirroring list on your device. |
-| `port` | number | `7000` | TCP port the receiver listens on. |
+| `airplayName` | string | `"GoPlay"` | Name shown in the AirPlay and Screen Mirroring device list. |
+| `port` | number | `7000` | TCP port used by the receiver. |
 
-> Changes are applied **on startup** — restart `goplay.exe` after editing the file.
-> After a name change, your iPhone may keep showing the old name for a minute (mDNS cache); toggle Wi‑Fi to refresh it instantly.
+Changes are applied on startup. Restart GoPlay after editing `config.json`.
+
+After changing the AirPlay name, iOS or iPadOS may continue to show the old name for a short time because of mDNS cache. Toggling Wi-Fi on the device can refresh the list faster.
 
 ---
 
-## 🛠️ Build from source
+## Build from source
 
-**Requirements:** [Go 1.25+](https://go.dev/dl/) and a Windows build of `mpv.exe` for running.
+### Requirements
+
+- [Go](https://go.dev/dl/)
+- `mpv`
+  - Windows: `mpv.exe` next to `goplay.exe` or available in `PATH`
+  - Linux and macOS: `mpv` available as a system command in `PATH`
+
+### Windows
 
 ```bash
 git clone https://github.com/ivqxzz/goplay.git
@@ -67,60 +133,81 @@ go mod tidy
 go build -trimpath -ldflags "-s -w" -o goplay.exe .
 ```
 
-Or just run the included `build.bat`.
+You can also run the included build script:
 
-The `-H windowsgui` flag builds a windowless app. For debugging (so you can see logs and stop it with `Ctrl+C`), build a normal console binary instead:
-
-```bash
-go build -o goplay.exe .
+```bat
+build.bat
 ```
 
-### Cross‑compiling
+This builds a console application. To stop GoPlay, close the console window or press `Ctrl+C`.
 
-The project is pure Go (no cgo), so it cross‑compiles cleanly:
+A windowless build is possible, but it is not recommended unless the application has another built-in way to exit:
 
 ```bash
-GOOS=linux  GOARCH=amd64 CGO_ENABLED=0 go build -o goplay .   # Linux
-GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o goplay .   # macOS (Apple Silicon)
+go build -trimpath -ldflags "-s -w -H windowsgui" -o goplay.exe .
 ```
 
-> Non‑Windows builds compile, but are **not yet fully tested**. The auto‑kill of child `mpv` processes is currently Windows‑only, and macOS may need extra handling for its system Bonjour responder on port 5353.
+### Linux and macOS
+
+```bash
+git clone https://github.com/ivqxzz/goplay.git
+cd goplay
+go mod tidy
+go build -trimpath -ldflags "-s -w" -o goplay .
+```
+
+Example cross-compilation commands:
+
+```bash
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o goplay .
+GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o goplay .
+```
+
+Non-Windows builds are experimental and may require additional testing or fixes.
 
 ---
 
-## 📋 Requirements
+## Requirements
 
-- Windows 10 / 11 (primary target)
-- `mpv.exe` available next to the binary or on `PATH`
-- A GPU that supports hardware video decode (recommended for smooth mirroring)
-- PC and device on the same local network
+### Windows
+
+- Windows 10 or Windows 11
+- `mpv.exe` next to `goplay.exe` or available in `PATH`
+- PC and iPhone or iPad on the same local network
+- Firewall access for `goplay.exe`
+- Hardware video decoding support is recommended for smoother mirroring
+
+### Linux and macOS
+
+- Experimental support only
+- `mpv` installed and available in `PATH`
+- Computer and iPhone or iPad on the same local network
+- Network and firewall configuration that allows local AirPlay discovery and streaming
 
 ---
 
-## 🧯 Troubleshooting
+## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| GoPlay doesn't appear on the iPhone | Check both devices are on the same Wi‑Fi; check your firewall isn't blocking `goplay.exe`. |
-| Name change doesn't show up | Restart `goplay.exe`; toggle Wi‑Fi on the iPhone (mDNS cache). |
-| Nothing plays / black screen | Make sure `mpv.exe` is present next to `goplay.exe`. See `goplay.log`. |
-| Protected video won't play | Expected — DRM (FairPlay video) is not supported. |
+| GoPlay does not appear on the iPhone or iPad | Make sure both devices are on the same local network. Check that the firewall is not blocking GoPlay. |
+| The device name does not update | Restart GoPlay and toggle Wi-Fi on the iPhone or iPad to refresh mDNS cache. |
+| Nothing plays or the screen is black | Make sure `mpv` is installed and available. On Windows, put `mpv.exe` next to `goplay.exe`. Check `goplay.log`. |
+| `mpv` is not found | On Windows, put `mpv.exe` next to `goplay.exe` or add it to `PATH`. On Linux and macOS, install `mpv` and check `mpv --version`. |
+| Protected video does not play | This is expected. DRM-protected video is not supported. |
 
-A log file `goplay.log` is written next to the executable and is the first place to look when something goes wrong.
-
----
-
-## 🙏 Credits
-
-GoPlay's AirPlay/FairPlay handshake and key‑derivation code is derived from the excellent
-[**RPiPlay**](https://github.com/FD-/RPiPlay) project and its predecessors
-(`playfair`, `omg_hax`, FairPlay reverse‑engineering work). Huge thanks to those authors.
-
-Video and audio rendering is handled by [**mpv**](https://mpv.io/).
+A log file named `goplay.log` is written next to the executable and is the first place to check when something goes wrong.
 
 ---
 
-## 📄 License
+## Credits
 
-Because GoPlay includes code derived from RPiPlay, it is distributed under the
-**GNU General Public License v3.0**. See [LICENSE](LICENSE) for details.
+GoPlay includes code derived from [RPiPlay](https://github.com/FD-/RPiPlay) and related FairPlay reverse-engineering work, including `playfair` and `omg_hax`.
+
+Video and audio playback is handled by [mpv](https://mpv.io/).
+
+---
+
+## License
+
+Because GoPlay includes code derived from RPiPlay, it is distributed under the GNU General Public License v3.0. See [LICENSE](LICENSE) for details.
